@@ -57,7 +57,7 @@ export interface Product {
   stockQuantity?: number | null
   isActive: boolean
   featured: boolean
-  tags: any[]
+  tags: string[]
   updatedAt: string
   createdAt: string
 }
@@ -93,7 +93,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 export async function fetchProducts(params?: {
   limit?: number
   page?: number
-  where?: any
+  where?: Record<string, unknown>
 }): Promise<ProductsResponse> {
   try {
     const searchParams = new URLSearchParams()
@@ -126,8 +126,8 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     const response = await fetchProducts({
       limit: 1,
       where: {
-        slug: { equals: slug }
-      }
+        slug: { equals: slug },
+      },
     })
 
     return response.docs[0] || null
@@ -143,8 +143,8 @@ export async function fetchFeaturedProducts(limit = 8): Promise<Product[]> {
       limit,
       where: {
         featured: { equals: true },
-        isActive: { equals: true }
-      }
+        isActive: { equals: true },
+      },
     })
 
     return response.docs
@@ -165,9 +165,12 @@ export async function fetchCategories(params?: {
     if (params?.page) searchParams.set('page', params.page.toString())
 
     // Only fetch active categories
-    searchParams.set('where', JSON.stringify({
-      isActive: { equals: true }
-    }))
+    searchParams.set(
+      'where',
+      JSON.stringify({
+        isActive: { equals: true },
+      }),
+    )
 
     const url = `${API_BASE_URL}/api/categories?${searchParams}`
     const response = await fetch(url, {
@@ -188,17 +191,20 @@ export async function fetchCategories(params?: {
   }
 }
 
-export async function fetchProductsByCategory(categorySlug: string, params?: {
-  limit?: number
-  page?: number
-}): Promise<ProductsResponse> {
+export async function fetchProductsByCategory(
+  categorySlug: string,
+  params?: {
+    limit?: number
+    page?: number
+  },
+): Promise<ProductsResponse> {
   try {
     return await fetchProducts({
       ...params,
       where: {
         'category.slug': { equals: categorySlug },
-        isActive: { equals: true }
-      }
+        isActive: { equals: true },
+      },
     })
   } catch (error) {
     console.error('Error fetching products by category:', error)

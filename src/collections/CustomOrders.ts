@@ -176,7 +176,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'number',
       admin: {
         description: 'Estimated print volume in cm³ (calculated from CAD files)',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           // Only show this field for admins
           return false // Hide from public forms
         },
@@ -187,7 +187,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'number',
       admin: {
         description: 'Estimated material weight in grams',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms
         },
       },
@@ -197,7 +197,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'text',
       admin: {
         description: 'Estimated print time (e.g., "5 hours")',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms
         },
       },
@@ -207,7 +207,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'number',
       admin: {
         description: 'Final quoted price in RON',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms
         },
       },
@@ -217,7 +217,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'textarea',
       admin: {
         description: 'Internal notes about pricing calculations',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms
         },
       },
@@ -276,7 +276,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'textarea',
       admin: {
         description: 'Internal notes for production team',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms
         },
       },
@@ -288,7 +288,7 @@ export const CustomOrders: CollectionConfig = {
       type: 'array',
       admin: {
         description: 'Log of communications with customer',
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms
         },
       },
@@ -356,7 +356,7 @@ export const CustomOrders: CollectionConfig = {
         },
       ],
       admin: {
-        condition: (data, siblingData) => {
+        condition: (_data, _siblingData) => {
           return false // Hide from public forms initially
         },
       },

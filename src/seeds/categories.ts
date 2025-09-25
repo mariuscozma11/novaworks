@@ -55,7 +55,7 @@ export const seedCategories = async (payload: Payload) => {
 
     // Create categories
     for (const categoryData of categoriesData) {
-      const category = await payload.create({
+      await payload.create({
         collection: 'categories',
         data: {
           name: categoryData.name,

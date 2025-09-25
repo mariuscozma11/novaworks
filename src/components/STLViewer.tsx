@@ -2,8 +2,8 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { STLLoader } from 'three/addons/loaders/STLLoader.js'
 import { Upload, FileText, Package, Ruler, Calculator } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,15 +28,15 @@ interface Analysis {
 
 const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '' }) => {
   const mountRef = useRef<HTMLDivElement>(null)
-  const sceneRef = useRef<THREE.Scene>()
-  const rendererRef = useRef<THREE.WebGLRenderer>()
-  const cameraRef = useRef<THREE.PerspectiveCamera>()
-  const controlsRef = useRef<OrbitControls>()
-  const meshRef = useRef<THREE.Mesh>()
-  const animationIdRef = useRef<number>()
+  const sceneRef = useRef<THREE.Scene | null>(null)
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
+  const controlsRef = useRef<OrbitControls | null>(null)
+  const meshRef = useRef<THREE.Mesh | null>(null)
+  const animationIdRef = useRef<number | undefined>(undefined)
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
   const [error, setError] = useState<string>('')
 
@@ -54,7 +54,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
       75,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
       0.1,
-      1000
+      1000,
     )
     camera.position.set(50, 50, 50)
     cameraRef.current = camera
@@ -113,8 +113,9 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current)
       }
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      const currentMount = mountRef.current
+      if (currentMount && renderer.domElement && currentMount.contains(renderer.domElement)) {
+        currentMount.removeChild(renderer.domElement)
       }
       renderer.dispose()
       controls.dispose()
@@ -170,83 +171,85 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
   }, [])
 
   // Load and analyze STL file
-  const loadSTL = useCallback(async (file: File) => {
-    if (!sceneRef.current || !cameraRef.current || !controlsRef.current) return
+  const loadSTL = useCallback(
+    async (file: File) => {
+      if (!sceneRef.current || !cameraRef.current || !controlsRef.current) return
 
-    setIsLoading(true)
-    setError('')
+      setIsLoading(true)
+      setError('')
 
-    try {
-      const loader = new STLLoader()
-      const arrayBuffer = await file.arrayBuffer()
+      try {
+        const loader = new STLLoader()
+        const arrayBuffer = await file.arrayBuffer()
 
-      // Load geometry
-      const geometry = loader.parse(arrayBuffer)
+        // Load geometry
+        const geometry = loader.parse(arrayBuffer)
 
-      // Create material
-      const material = new THREE.MeshPhongMaterial({
-        color: 0x4f46e5,
-        shininess: 100,
-        side: THREE.DoubleSide
-      })
+        // Create material
+        const material = new THREE.MeshPhongMaterial({
+          color: 0x4f46e5,
+          shininess: 100,
+          side: THREE.DoubleSide,
+        })
 
-      // Remove existing mesh
-      if (meshRef.current && sceneRef.current) {
-        sceneRef.current.remove(meshRef.current)
+        // Remove existing mesh
+        if (meshRef.current && sceneRef.current) {
+          sceneRef.current.remove(meshRef.current)
+        }
+
+        // Create mesh
+        const mesh = new THREE.Mesh(geometry, material)
+        mesh.castShadow = true
+        mesh.receiveShadow = true
+        meshRef.current = mesh
+        sceneRef.current.add(mesh)
+
+        // Calculate bounding box
+        const box = new THREE.Box3().setFromObject(mesh)
+        const size = box.getSize(new THREE.Vector3())
+        const center = box.getCenter(new THREE.Vector3())
+
+        // Center the object
+        mesh.position.sub(center)
+
+        // Calculate properties
+        const volume = calculateVolume(geometry) // mm³
+        const volumeInCm3 = volume / 1000 // Convert to cm³
+        const surfaceArea = calculateSurfaceArea(geometry) // mm²
+        const triangles = geometry.attributes.position.count / 3
+
+        // Fit camera to object
+        const maxDim = Math.max(size.x, size.y, size.z)
+        const fov = cameraRef.current.fov * (Math.PI / 180)
+        const cameraDistance = Math.abs(maxDim / (2 * Math.tan(fov / 2))) * 1.5
+
+        cameraRef.current.position.set(cameraDistance, cameraDistance, cameraDistance)
+        cameraRef.current.lookAt(0, 0, 0)
+        controlsRef.current.target.set(0, 0, 0)
+        controlsRef.current.update()
+
+        const analysisData: Analysis = {
+          volume: volumeInCm3,
+          dimensions: {
+            x: Math.round(size.x * 10) / 10,
+            y: Math.round(size.y * 10) / 10,
+            z: Math.round(size.z * 10) / 10,
+          },
+          triangles: Math.round(triangles),
+          area: Math.round(surfaceArea * 100) / 100,
+        }
+
+        setAnalysis(analysisData)
+        onAnalysisComplete?.(analysisData)
+      } catch (err) {
+        console.error('Error loading STL:', err)
+        setError('Eroare la încărcarea fișierului STL. Verifică că fișierul este valid.')
+      } finally {
+        setIsLoading(false)
       }
-
-      // Create mesh
-      const mesh = new THREE.Mesh(geometry, material)
-      mesh.castShadow = true
-      mesh.receiveShadow = true
-      meshRef.current = mesh
-      sceneRef.current.add(mesh)
-
-      // Calculate bounding box
-      const box = new THREE.Box3().setFromObject(mesh)
-      const size = box.getSize(new THREE.Vector3())
-      const center = box.getCenter(new THREE.Vector3())
-
-      // Center the object
-      mesh.position.sub(center)
-
-      // Calculate properties
-      const volume = calculateVolume(geometry) // mm³
-      const volumeInCm3 = volume / 1000 // Convert to cm³
-      const surfaceArea = calculateSurfaceArea(geometry) // mm²
-      const triangles = geometry.attributes.position.count / 3
-
-      // Fit camera to object
-      const maxDim = Math.max(size.x, size.y, size.z)
-      const fov = cameraRef.current.fov * (Math.PI / 180)
-      const cameraDistance = Math.abs(maxDim / (2 * Math.tan(fov / 2))) * 1.5
-
-      cameraRef.current.position.set(cameraDistance, cameraDistance, cameraDistance)
-      cameraRef.current.lookAt(0, 0, 0)
-      controlsRef.current.target.set(0, 0, 0)
-      controlsRef.current.update()
-
-      const analysisData: Analysis = {
-        volume: volumeInCm3,
-        dimensions: {
-          x: Math.round(size.x * 10) / 10,
-          y: Math.round(size.y * 10) / 10,
-          z: Math.round(size.z * 10) / 10
-        },
-        triangles: Math.round(triangles),
-        area: Math.round(surfaceArea * 100) / 100
-      }
-
-      setAnalysis(analysisData)
-      onAnalysisComplete?.(analysisData)
-
-    } catch (err) {
-      console.error('Error loading STL:', err)
-      setError('Eroare la încărcarea fișierului STL. Verifică că fișierul este valid.')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [calculateVolume, calculateSurfaceArea, onAnalysisComplete])
+    },
+    [calculateVolume, calculateSurfaceArea, onAnalysisComplete],
+  )
 
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

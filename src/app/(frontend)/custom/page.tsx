@@ -1,7 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Upload, Package, Calculator, Palette, Info, AlertTriangle, CheckCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  Upload,
+  Package,
+  Calculator,
+  Palette,
+  Info,
+  AlertTriangle,
+  CheckCircle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,7 +48,7 @@ export default function CustomOrdersPage() {
       pricePerGram: 0.05,
       density: 1.24,
       description: 'Biodegradabil, ușor de imprimat',
-      color: 'bg-green-500'
+      color: 'bg-green-500',
     },
     {
       id: 'petg',
@@ -48,7 +56,7 @@ export default function CustomOrdersPage() {
       pricePerGram: 0.07,
       density: 1.27,
       description: 'Transparent, rezistent la impact',
-      color: 'bg-blue-500'
+      color: 'bg-blue-500',
     },
     {
       id: 'abs',
@@ -56,26 +64,26 @@ export default function CustomOrdersPage() {
       pricePerGram: 0.06,
       density: 1.04,
       description: 'Durabil, rezistent la căldură',
-      color: 'bg-orange-500'
+      color: 'bg-orange-500',
     },
     {
       id: 'tpu',
       name: 'TPU',
       pricePerGram: 0.12,
-      density: 1.20,
+      density: 1.2,
       description: 'Flexibil, elastic',
-      color: 'bg-purple-500'
+      color: 'bg-purple-500',
     },
   ]
 
   // Calculate instant quote
-  const calculateQuote = () => {
+  const calculateQuote = useCallback(() => {
     if (!stlAnalysis || !selectedMaterial) {
       setInstantQuote(null)
       return
     }
 
-    const material = materials.find(m => m.id === selectedMaterial)
+    const material = materials.find((m) => m.id === selectedMaterial)
     if (!material) return
 
     // Calculate material weight based on volume, infill and material density
@@ -87,7 +95,8 @@ export default function CustomOrdersPage() {
     const baseTimePerCm3 = 0.6 // hours per cm³ base time
     const infillTimeMultiplier = 0.3 + (infill / 100) * 0.7 // infill affects time more realistically
     const complexityMultiplier = Math.min(1.5, stlAnalysis.triangles / 10000) // more triangles = more complex
-    const estimatedPrintTime = stlAnalysis.volume * baseTimePerCm3 * infillTimeMultiplier * complexityMultiplier
+    const estimatedPrintTime =
+      stlAnalysis.volume * baseTimePerCm3 * infillTimeMultiplier * complexityMultiplier
 
     // Calculate costs
     const printTimeCost = estimatedPrintTime * 10 // 10 RON per hour
@@ -100,9 +109,9 @@ export default function CustomOrdersPage() {
       setupCost,
       total: subtotal,
       materialWeight: materialWeight * quantity,
-      printTime: estimatedPrintTime * quantity
+      printTime: estimatedPrintTime * quantity,
     })
-  }
+  }, [stlAnalysis, selectedMaterial, infill, quantity, materials])
 
   // Handle STL analysis completion
   const handleSTLAnalysis = (analysis: STLAnalysis) => {
@@ -112,7 +121,7 @@ export default function CustomOrdersPage() {
   // Auto-calculate quote when parameters change
   useEffect(() => {
     calculateQuote()
-  }, [stlAnalysis, selectedMaterial, infill, quantity])
+  }, [calculateQuote])
 
   // Check if part fits on build plate
   const checkBuildPlateFit = () => {
@@ -126,7 +135,7 @@ export default function CustomOrdersPage() {
     if (maxX <= buildPlateSize && maxY <= buildPlateSize && maxZ <= buildPlateSize) {
       return {
         fits: true,
-        message: `Piesa se încadrează perfect (${maxX.toFixed(1)}×${maxY.toFixed(1)}×${maxZ.toFixed(1)}mm)`
+        message: `Piesa se încadrează perfect (${maxX.toFixed(1)}×${maxY.toFixed(1)}×${maxZ.toFixed(1)}mm)`,
       }
     } else {
       const exceedsX = maxX > buildPlateSize
@@ -139,14 +148,14 @@ export default function CustomOrdersPage() {
 
       return {
         fits: false,
-        message: `Depășește placa de imprimare (${exceededDims.join(', ')} > 256mm)`
+        message: `Depășește placa de imprimare (${exceededDims.join(', ')} > 256mm)`,
       }
     }
   }
 
   const buildPlateFit = checkBuildPlateFit()
   const canCalculateQuote = stlAnalysis && selectedMaterial
-  const isReadyToOrder = canCalculateQuote && buildPlateFit.fits
+  const _isReadyToOrder = canCalculateQuote && buildPlateFit.fits
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -171,10 +180,7 @@ export default function CustomOrdersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <STLViewer
-                  onAnalysisComplete={handleSTLAnalysis}
-                  className="w-full"
-                />
+                <STLViewer onAnalysisComplete={handleSTLAnalysis} className="w-full" />
 
                 {/* Analysis Results */}
                 {stlAnalysis && (
@@ -191,11 +197,15 @@ export default function CustomOrdersPage() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-600">Suprafața:</span>
-                          <span className="font-medium">{(stlAnalysis.area / 100).toFixed(1)} cm²</span>
+                          <span className="font-medium">
+                            {(stlAnalysis.area / 100).toFixed(1)} cm²
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-600">Triunghiuri:</span>
-                          <span className="font-medium">{stlAnalysis.triangles.toLocaleString()}</span>
+                          <span className="font-medium">
+                            {stlAnalysis.triangles.toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -225,26 +235,32 @@ export default function CustomOrdersPage() {
 
                 {/* Build Plate Verification */}
                 {stlAnalysis && (
-                  <div className={`p-4 rounded-lg border ${
-                    buildPlateFit.fits
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-orange-50 border-orange-200'
-                  }`}>
+                  <div
+                    className={`p-4 rounded-lg border ${
+                      buildPlateFit.fits
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-orange-50 border-orange-200'
+                    }`}
+                  >
                     <div className="flex items-center gap-2">
                       {buildPlateFit.fits ? (
                         <CheckCircle className="w-5 h-5 text-green-600" />
                       ) : (
                         <AlertTriangle className="w-5 h-5 text-orange-600" />
                       )}
-                      <span className={`font-medium ${
-                        buildPlateFit.fits ? 'text-green-900' : 'text-orange-900'
-                      }`}>
+                      <span
+                        className={`font-medium ${
+                          buildPlateFit.fits ? 'text-green-900' : 'text-orange-900'
+                        }`}
+                      >
                         {buildPlateFit.fits ? 'Încadrare validată' : 'Atenție la dimensiuni'}
                       </span>
                     </div>
-                    <p className={`text-sm mt-1 ${
-                      buildPlateFit.fits ? 'text-green-700' : 'text-orange-700'
-                    }`}>
+                    <p
+                      className={`text-sm mt-1 ${
+                        buildPlateFit.fits ? 'text-green-700' : 'text-orange-700'
+                      }`}
+                    >
                       {buildPlateFit.message}
                     </p>
                     <div className="mt-2 text-xs text-slate-600">
@@ -332,22 +348,29 @@ export default function CustomOrdersPage() {
                     <div className="bg-slate-50 p-3 rounded-lg">
                       <p className="text-xs text-slate-600">
                         <strong>
-                          {infill <= 20 ? 'Rapid & Economic' :
-                           infill <= 50 ? 'Standard' :
-                           infill <= 80 ? 'Rezistent' : 'Ultra-Solid'}
-                        </strong> -
-                        {infill <= 20 ? ' Ideal pentru prototipuri și piese decorative' :
-                         infill <= 50 ? ' Echilibru între rezistență și timp' :
-                         infill <= 80 ? ' Piese care suportă forțe mari' : ' Maxim de rezistență și durabilitate'}
+                          {infill <= 20
+                            ? 'Rapid & Economic'
+                            : infill <= 50
+                              ? 'Standard'
+                              : infill <= 80
+                                ? 'Rezistent'
+                                : 'Ultra-Solid'}
+                        </strong>{' '}
+                        -
+                        {infill <= 20
+                          ? ' Ideal pentru prototipuri și piese decorative'
+                          : infill <= 50
+                            ? ' Echilibru între rezistență și timp'
+                            : infill <= 80
+                              ? ' Piese care suportă forțe mari'
+                              : ' Maxim de rezistență și durabilitate'}
                       </p>
                     </div>
                   </div>
 
                   {/* Quantity Control */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-medium text-slate-700">
-                      Cantitate
-                    </label>
+                    <label className="block text-sm font-medium text-slate-700">Cantitate</label>
                     <Input
                       type="number"
                       min="1"
@@ -434,7 +457,9 @@ export default function CustomOrdersPage() {
                   <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-lg p-4 text-center">
                     <div className="text-sm text-slate-300 mb-1">Total estimat</div>
                     <div className="text-3xl font-bold">{instantQuote.total.toFixed(2)} RON</div>
-                    <div className="text-sm text-slate-300">pentru {quantity} {quantity === 1 ? 'bucată' : 'bucăți'}</div>
+                    <div className="text-sm text-slate-300">
+                      pentru {quantity} {quantity === 1 ? 'bucată' : 'bucăți'}
+                    </div>
                   </div>
 
                   <Separator />
@@ -444,19 +469,30 @@ export default function CustomOrdersPage() {
                     <h4 className="font-semibold text-slate-900">Detalii Preț</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Material ({materials.find(m => m.id === selectedMaterial)?.name})</span>
-                        <span className="font-medium">{instantQuote.materialCost.toFixed(2)} RON</span>
+                        <span className="text-slate-600">
+                          Material ({materials.find((m) => m.id === selectedMaterial)?.name})
+                        </span>
+                        <span className="font-medium">
+                          {instantQuote.materialCost.toFixed(2)} RON
+                        </span>
                       </div>
                       <div className="flex justify-between text-xs text-slate-500">
-                        <span className="ml-2">→ {instantQuote.materialWeight.toFixed(1)}g × {materials.find(m => m.id === selectedMaterial)?.pricePerGram} RON/g</span>
+                        <span className="ml-2">
+                          → {instantQuote.materialWeight.toFixed(1)}g ×{' '}
+                          {materials.find((m) => m.id === selectedMaterial)?.pricePerGram} RON/g
+                        </span>
                         <span></span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-600">Timp imprimare</span>
-                        <span className="font-medium">{instantQuote.printTimeCost.toFixed(2)} RON</span>
+                        <span className="font-medium">
+                          {instantQuote.printTimeCost.toFixed(2)} RON
+                        </span>
                       </div>
                       <div className="flex justify-between text-xs text-slate-500">
-                        <span className="ml-2">→ {instantQuote.printTime.toFixed(1)}h × 10 RON/h</span>
+                        <span className="ml-2">
+                          → {instantQuote.printTime.toFixed(1)}h × 10 RON/h
+                        </span>
                         <span></span>
                       </div>
                       <div className="flex justify-between">
@@ -501,9 +537,7 @@ export default function CustomOrdersPage() {
                 <CardContent className="text-center py-8">
                   <Calculator className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                   <h3 className="font-medium text-slate-900 mb-2">Cotație Indisponibilă</h3>
-                  <p className="text-sm text-slate-500 mb-3">
-                    Pentru a calcula prețul:
-                  </p>
+                  <p className="text-sm text-slate-500 mb-3">Pentru a calcula prețul:</p>
                   <div className="text-xs text-slate-500 space-y-1 text-left max-w-48 mx-auto">
                     <div className="flex items-center gap-2">
                       {stlAnalysis ? (

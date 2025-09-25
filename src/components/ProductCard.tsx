@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Clock, Package, Weight, Layers } from 'lucide-react'
+import { Clock, Package, Weight } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -54,16 +54,8 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {t('product.featured')}
               </Badge>
             )}
-            {product.customizable && (
-              <Badge variant="secondary">
-                {t('product.customizable')}
-              </Badge>
-            )}
-            {!product.inStock && (
-              <Badge variant="destructive">
-                {t('product.out_of_stock')}
-              </Badge>
-            )}
+            {product.customizable && <Badge variant="secondary">{t('product.customizable')}</Badge>}
+            {!product.inStock && <Badge variant="destructive">{t('product.out_of_stock')}</Badge>}
           </div>
 
           {/* Material Badge */}
@@ -86,9 +78,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </Link>
 
           {product.shortDescription && (
-            <p className="text-sm text-slate-600 line-clamp-2">
-              {product.shortDescription}
-            </p>
+            <p className="text-sm text-slate-600 line-clamp-2">{product.shortDescription}</p>
           )}
 
           {/* Quick Specs */}
@@ -117,19 +107,11 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <div className="space-y-1">
-          <div className="text-2xl font-bold text-slate-900">
-            {formatPrice(product.price)}
-          </div>
-          <div className="text-xs text-slate-500">
-            {product.category.name}
-          </div>
+          <div className="text-2xl font-bold text-slate-900">{formatPrice(product.price)}</div>
+          <div className="text-xs text-slate-500">{product.category.name}</div>
         </div>
 
-        <Button
-          size="sm"
-          disabled={!product.inStock}
-          className="bg-slate-900 hover:bg-slate-800"
-        >
+        <Button size="sm" disabled={!product.inStock} className="bg-slate-900 hover:bg-slate-800">
           {product.inStock ? t('product.add_to_cart') : t('product.sold_out')}
         </Button>
       </CardFooter>
