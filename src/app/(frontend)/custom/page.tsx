@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Upload,
   Package,
@@ -41,40 +41,43 @@ export default function CustomOrdersPage() {
   const [instantQuote, setInstantQuote] = useState<InstantQuote | null>(null)
 
   // Material definitions with properties for calculation
-  const materials = [
-    {
-      id: 'pla',
-      name: 'PLA',
-      pricePerGram: 0.05,
-      density: 1.24,
-      description: 'Biodegradabil, ușor de imprimat',
-      color: 'bg-green-500',
-    },
-    {
-      id: 'petg',
-      name: 'PETG',
-      pricePerGram: 0.07,
-      density: 1.27,
-      description: 'Transparent, rezistent la impact',
-      color: 'bg-blue-500',
-    },
-    {
-      id: 'abs',
-      name: 'ABS',
-      pricePerGram: 0.06,
-      density: 1.04,
-      description: 'Durabil, rezistent la căldură',
-      color: 'bg-orange-500',
-    },
-    {
-      id: 'tpu',
-      name: 'TPU',
-      pricePerGram: 0.12,
-      density: 1.2,
-      description: 'Flexibil, elastic',
-      color: 'bg-purple-500',
-    },
-  ]
+  const materials = useMemo(
+    () => [
+      {
+        id: 'pla',
+        name: 'PLA',
+        pricePerGram: 0.05,
+        density: 1.24,
+        description: 'Biodegradabil, ușor de imprimat',
+        color: 'bg-green-500',
+      },
+      {
+        id: 'petg',
+        name: 'PETG',
+        pricePerGram: 0.07,
+        density: 1.27,
+        description: 'Transparent, rezistent la impact',
+        color: 'bg-blue-500',
+      },
+      {
+        id: 'abs',
+        name: 'ABS',
+        pricePerGram: 0.06,
+        density: 1.04,
+        description: 'Durabil, rezistent la căldură',
+        color: 'bg-orange-500',
+      },
+      {
+        id: 'tpu',
+        name: 'TPU',
+        pricePerGram: 0.12,
+        density: 1.2,
+        description: 'Flexibil, elastic',
+        color: 'bg-purple-500',
+      },
+    ],
+    [],
+  )
 
   // Calculate instant quote
   const calculateQuote = useCallback(() => {

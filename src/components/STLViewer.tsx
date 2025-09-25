@@ -44,6 +44,8 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
   useEffect(() => {
     if (!mountRef.current) return
 
+    const currentMount = mountRef.current
+
     // Scene setup
     const scene = new THREE.Scene()
     scene.background = new THREE.Color(0xf8fafc)
@@ -52,7 +54,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
       75,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      currentMount.clientWidth / currentMount.clientHeight,
       0.1,
       1000,
     )
@@ -61,11 +63,11 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
 
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({ antialias: true })
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight)
+    renderer.setSize(currentMount.clientWidth, currentMount.clientHeight)
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    mountRef.current.appendChild(renderer.domElement)
+    currentMount.appendChild(renderer.domElement)
     rendererRef.current = renderer
 
     // Controls
@@ -113,7 +115,6 @@ const STLViewer: React.FC<STLViewerProps> = ({ onAnalysisComplete, className = '
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current)
       }
-      const currentMount = mountRef.current
       if (currentMount && renderer.domElement && currentMount.contains(renderer.domElement)) {
         currentMount.removeChild(renderer.domElement)
       }
