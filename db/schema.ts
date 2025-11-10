@@ -8,7 +8,7 @@ export const categories = pgTable('categories', {
   slug: varchar('slug', { length: 100 }).notNull().unique(),
   description: text('description'),
   imageUrl: varchar('image_url', { length: 500 }),
-  parentId: uuid('parent_id').references(() => categories.id, { onDelete: 'set null' }),
+  parentId: uuid('parent_id').references((): any => categories.id, { onDelete: 'set null' }),
   displayOrder: integer('display_order').default(0),
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
