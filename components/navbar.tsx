@@ -1,0 +1,149 @@
+import Link from 'next/link';
+import { Search, Heart, ShoppingCart, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { getDictionary, type Locale } from '@/lib/i18n';
+import { LanguageSelector } from '@/components/language-selector';
+import { NavbarClient } from '@/components/navbar-client';
+import { UserMenu } from '@/components/user-menu';
+
+export async function Navbar({ lang }: { lang: Locale }) {
+  const dict = await getDictionary(lang);
+
+  const navigationItems = [
+    {
+      label: dict.navbar.products,
+      href: `/${lang}/products`,
+      hasDropdown: true,
+      dropdownItems: [
+        { label: dict.navbar.allProducts, href: `/${lang}/products` },
+        { label: dict.navbar.newArrivals, href: `/${lang}/products/new` },
+        { label: dict.navbar.bestSellers, href: `/${lang}/products/bestsellers` },
+        { label: dict.navbar.sale, href: `/${lang}/products/sale` },
+      ],
+    },
+    {
+      label: dict.navbar.categories,
+      href: `/${lang}/categories`,
+      hasDropdown: true,
+      dropdownItems: [
+        { label: dict.navbar.figurines, href: `/${lang}/categories/figurines` },
+        { label: dict.navbar.decorations, href: `/${lang}/categories/decorations` },
+        { label: dict.navbar.functional, href: `/${lang}/categories/functional` },
+        { label: dict.navbar.customOrders, href: `/${lang}/categories/custom` },
+      ],
+    },
+    {
+      label: dict.navbar.about,
+      href: `/${lang}/about`,
+      hasDropdown: false,
+    },
+    {
+      label: dict.navbar.contact,
+      href: `/${lang}/contact`,
+      hasDropdown: false,
+    },
+  ];
+
+  // Favorites and cart counts (mock data)
+  const favoritesCount = 0;
+  const cartCount = 0;
+
+  return (
+    <NavbarClient lang={lang}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex items-center justify-between">
+          {/* Logo - Left */}
+          <Link href={`/${lang}`} className="flex items-center space-x-2 cursor-pointer">
+            <div className="text-2xl font-bold tracking-tight">
+              Nova<span className="text-primary">Works</span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation - Center */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {navigationItems.map((item) => (
+              <div key={item.label}>
+                {item.hasDropdown ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-1 font-medium px-3 cursor-pointer text-[15px]"
+                      >
+                        {item.label}
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="center"
+                      className="w-48 backdrop-blur-md bg-white/95 dark:bg-black/95"
+                    >
+                      {item.dropdownItems?.map((dropdownItem) => (
+                        <DropdownMenuItem key={dropdownItem.href} asChild>
+                          <Link href={dropdownItem.href} className="cursor-pointer">
+                            {dropdownItem.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Link href={item.href} className="cursor-pointer">
+                    <Button variant="ghost" className="font-medium px-3 cursor-pointer text-[15px]">
+                      {item.label}
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Icons - Right */}
+          <div className="flex items-center space-x-1">
+            {/* Language Selector */}
+            <LanguageSelector currentLang={lang} />
+
+            {/* Search Icon */}
+            <Button variant="ghost" className="hidden md:flex p-3 cursor-pointer min-h-0 h-auto">
+              <Search className="!size-5" strokeWidth={2} />
+            </Button>
+
+            {/* User Menu Dropdown */}
+            <UserMenu
+              lang={lang}
+              dict={{
+                myAccount: dict.navbar.myAccount,
+                orders: dict.navbar.orders,
+                settings: dict.navbar.settings,
+                login: dict.navbar.login,
+                logout: dict.navbar.logout,
+              }}
+            />
+
+            {/* Favorites with Badge */}
+            <Button variant="ghost" className="relative p-3 cursor-pointer min-h-0 h-auto">
+              <Heart className="!size-5" strokeWidth={2} />
+              <div className="absolute top-1 right-1 h-4 w-4 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px] font-semibold">
+                {favoritesCount}
+              </div>
+            </Button>
+
+            {/* Shopping Cart with Badge */}
+            <Button variant="ghost" className="relative p-3 cursor-pointer min-h-0 h-auto">
+              <ShoppingCart className="!size-5" strokeWidth={2} />
+              <div className="absolute top-1 right-1 h-4 w-4 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px] font-semibold">
+                {cartCount}
+              </div>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </NavbarClient>
+  );
+}
