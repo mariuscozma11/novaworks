@@ -25,9 +25,9 @@ export function LanguageSelector({ currentLang }: { currentLang: Locale }) {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="p-3 cursor-pointer min-h-0 h-auto">
+        <Button variant="ghost" className="p-3 min-h-0 h-auto">
           <Globe className="!size-5" strokeWidth={2} />
         </Button>
       </DropdownMenuTrigger>

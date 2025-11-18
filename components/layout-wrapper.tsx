@@ -24,7 +24,7 @@ export function LayoutWrapper({
   return (
     <>
       {navbar}
-      <main className="pt-20 min-h-screen">{children}</main>
+      <main className="min-h-screen pt-20">{children}</main>
       {footer}
     </>
   );

@@ -17,10 +17,10 @@ export function NavbarClient({ children, lang }: { children: ReactNode; lang: Lo
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
         isScrolled
-          ? 'py-2 backdrop-blur-md bg-white/70 dark:bg-black/70 shadow-sm'
-          : 'py-4 bg-white dark:bg-black'
+          ? 'py-2 backdrop-blur-md bg-white/80 dark:bg-black/80 shadow-md'
+          : 'py-4 bg-transparent shadow-none'
       }`}
     >
       {children}

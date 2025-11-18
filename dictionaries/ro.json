@@ -58,5 +58,22 @@
     "termsOfService": "Termeni și Condiții",
     "shippingReturns": "Livrare & Returnări",
     "allRightsReserved": "Toate drepturile rezervate"
+  },
+  "hero": {
+    "title": "Transformă-ți Ideile în Realitate",
+    "subtitle": "Încarcă fișierul tău STL, primește o ofertă instantanee și primește piesele tale imprimate 3D personalizate livrate la ușa ta.",
+    "ctaButton": "Primește Oferta",
+    "orShop": "Sau răsfoiește magazinul nostru"
+  },
+  "categories": {
+    "browseTitle": "Răsfoiește după Categorie"
+  },
+  "products": {
+    "newArrivals": "Noutăți",
+    "viewAll": "Vezi Toate",
+    "outOfStock": "Stoc Epuizat",
+    "quickView": "Vizualizare Rapidă",
+    "addToCart": "Adaugă în Coș",
+    "addToFavorites": "Adaugă la Favorite"
   }
 }

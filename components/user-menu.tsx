@@ -29,9 +29,9 @@ export function UserMenu({ lang, dict }: UserMenuProps) {
 
   if (!isAuthenticated) {
     return (
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="p-3 cursor-pointer min-h-0 h-auto">
+          <Button variant="ghost" className="p-3 min-h-0 h-auto">
             <User className="!size-5" strokeWidth={2} />
           </Button>
         </DropdownMenuTrigger>
@@ -51,9 +51,9 @@ export function UserMenu({ lang, dict }: UserMenuProps) {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="p-3 cursor-pointer min-h-0 h-auto">
+        <Button variant="ghost" className="p-3 min-h-0 h-auto">
           <User className="!size-5" strokeWidth={2} />
         </Button>
       </DropdownMenuTrigger>

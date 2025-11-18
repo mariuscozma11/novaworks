@@ -58,5 +58,22 @@
     "termsOfService": "Terms of Service",
     "shippingReturns": "Shipping & Returns",
     "allRightsReserved": "All rights reserved"
+  },
+  "hero": {
+    "title": "Transform Your Ideas into Reality",
+    "subtitle": "Upload your STL file, get an instant quote, and receive your custom 3D printed parts delivered to your door.",
+    "ctaButton": "Get Your Quote",
+    "orShop": "Or browse our shop"
+  },
+  "categories": {
+    "browseTitle": "Browse by Category"
+  },
+  "products": {
+    "newArrivals": "New Arrivals",
+    "viewAll": "View All",
+    "outOfStock": "Out of Stock",
+    "quickView": "Quick View",
+    "addToCart": "Add to Cart",
+    "addToFavorites": "Add to Favorites"
   }
 }
