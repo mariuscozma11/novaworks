@@ -40,27 +40,42 @@ const menuItems = [
   },
 ];
 
+const getBackToSiteUrl = (pathname: string) => {
+  // Extract language from pathname (e.g., /en/admin/dashboard -> /en)
+  const match = pathname.match(/^\/([a-z]{2})\//);
+  return match ? `/${match[1]}` : '/';
+};
+
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const backToSiteUrl = getBackToSiteUrl(pathname || '');
 
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/">
+                  <Link href={backToSiteUrl}>
                     <Home className="h-4 w-4" />
                     <span>Back to Site</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
               {menuItems.map((item) => {
-                const isActive = pathname === item.url;
+                const isActive = pathname?.includes(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive}>

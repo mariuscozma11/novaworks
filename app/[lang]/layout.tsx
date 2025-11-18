@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import "../globals.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { i18n, type Locale } from "@/lib/i18n";
 import { AuthProvider } from "@/components/auth-provider";
-import { AdminNavbarWrapper } from "@/components/admin-navbar-wrapper";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { LayoutWrapper } from "@/components/layout-wrapper";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -42,12 +42,12 @@ export default async function LocaleLayout({
         className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <AuthProvider>
-          <AdminNavbarWrapper />
-          <Navbar lang={lang} />
-          <main className="pt-20 min-h-screen">
+          <LayoutWrapper
+            navbar={<Navbar lang={lang} />}
+            footer={<Footer lang={lang} />}
+          >
             {children}
-          </main>
-          <Footer lang={lang} />
+          </LayoutWrapper>
         </AuthProvider>
       </body>
     </html>

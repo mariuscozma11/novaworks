@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -42,9 +43,11 @@ export default function ProductsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
+    nameEn: '',
+    nameRo: '',
     slug: '',
-    description: '',
+    descriptionEn: '',
+    descriptionRo: '',
     price: '',
     stock: '',
     categoryId: '',
@@ -101,9 +104,11 @@ export default function ProductsPage() {
 
     try {
       const productData = {
-        name: formData.name,
+        nameEn: formData.nameEn,
+        nameRo: formData.nameRo,
         slug: formData.slug,
-        description: formData.description,
+        descriptionEn: formData.descriptionEn,
+        descriptionRo: formData.descriptionRo,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock) || 0,
         categoryId: formData.categoryId,
@@ -129,9 +134,16 @@ export default function ProductsPage() {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
+      // Optimistic update - remove from UI immediately
+      setProducts((prev) => prev.filter((prod) => prod.id !== id));
+
       await ApiClient.deleteProduct(id);
+
+      // Fetch fresh data to ensure consistency
       await fetchData();
     } catch (error: any) {
+      // Revert on error
+      await fetchData();
       alert('Failed to delete product: ' + (error.message || 'Unknown error'));
     }
   };
@@ -139,9 +151,11 @@ export default function ProductsPage() {
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
+      nameEn: product.nameEn,
+      nameRo: product.nameRo,
       slug: product.slug,
-      description: product.description,
+      descriptionEn: product.descriptionEn,
+      descriptionRo: product.descriptionRo,
       price: product.price.toString(),
       stock: product.stock.toString(),
       categoryId: product.categoryId,
@@ -158,9 +172,11 @@ export default function ProductsPage() {
   const resetForm = () => {
     setEditingProduct(null);
     setFormData({
-      name: '',
+      nameEn: '',
+      nameRo: '',
       slug: '',
-      description: '',
+      descriptionEn: '',
+      descriptionRo: '',
       price: '',
       stock: '',
       categoryId: '',
@@ -168,15 +184,15 @@ export default function ProductsPage() {
     setImageUrls([]);
   };
 
-  const generateSlug = (name: string) => {
-    return name
+  const generateSlug = (nameEn: string) => {
+    return nameEn
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
   };
 
   const getCategoryName = (categoryId: string) => {
-    return categories.find((c) => c.id === categoryId)?.name || 'Unknown';
+    return categories.find((c) => c.id === categoryId)?.nameEn || 'Unknown';
   };
 
   return (
@@ -184,7 +200,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <p className="text-muted-foreground">Manage your product catalog (bilingual)</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -201,49 +217,82 @@ export default function ProductsPage() {
               <DialogDescription>
                 {editingProduct
                   ? 'Update the product details below.'
-                  : 'Add a new product to your catalog.'}
+                  : 'Add a new product with English and Romanian translations.'}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      setFormData({
-                        ...formData,
-                        name,
-                        slug: generateSlug(name),
-                      });
-                    }}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug *</Label>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
+              <Tabs defaultValue="en" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="en">English</TabsTrigger>
+                  <TabsTrigger value="ro">Romanian</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="en" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nameEn">Name (English) *</Label>
+                    <Input
+                      id="nameEn"
+                      value={formData.nameEn}
+                      onChange={(e) => {
+                        const nameEn = e.target.value;
+                        setFormData({
+                          ...formData,
+                          nameEn,
+                          slug: generateSlug(nameEn),
+                        });
+                      }}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="descriptionEn">Description (English) *</Label>
+                    <Textarea
+                      id="descriptionEn"
+                      value={formData.descriptionEn}
+                      onChange={(e) =>
+                        setFormData({ ...formData, descriptionEn: e.target.value })
+                      }
+                      rows={4}
+                      required
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="ro" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nameRo">Name (Romanian) *</Label>
+                    <Input
+                      id="nameRo"
+                      value={formData.nameRo}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nameRo: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="descriptionRo">Description (Romanian) *</Label>
+                    <Textarea
+                      id="descriptionRo"
+                      value={formData.descriptionRo}
+                      onChange={(e) =>
+                        setFormData({ ...formData, descriptionRo: e.target.value })
+                      }
+                      rows={4}
+                      required
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
+                <Label htmlFor="slug">Slug *</Label>
+                <Input
+                  id="slug"
+                  value={formData.slug}
                   onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                    setFormData({ ...formData, slug: e.target.value })
                   }
-                  rows={4}
                   required
                 />
               </div>
@@ -290,7 +339,7 @@ export default function ProductsPage() {
                     <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                          {category.nameEn}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -380,7 +429,8 @@ export default function ProductsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Image</TableHead>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Name (EN)</TableHead>
+                  <TableHead>Name (RO)</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
@@ -394,7 +444,7 @@ export default function ProductsPage() {
                       {product.images && product.images.length > 0 ? (
                         <img
                           src={product.images[0].url}
-                          alt={product.name}
+                          alt={product.nameEn}
                           className="h-12 w-12 object-cover rounded"
                         />
                       ) : (
@@ -405,11 +455,14 @@ export default function ProductsPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{product.name}</div>
+                        <div className="font-medium">{product.nameEn}</div>
                         <div className="text-sm text-muted-foreground">
                           {product.slug}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {product.nameRo}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">

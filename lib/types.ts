@@ -17,9 +17,11 @@ export interface User {
 // Category types
 export interface Category {
   id: string;
-  name: string;
+  nameEn: string;
+  nameRo: string;
   slug: string;
-  description?: string;
+  descriptionEn?: string;
+  descriptionRo?: string;
   imageUrl?: string;
   products?: Product[];
   createdAt: string;
@@ -37,9 +39,11 @@ export interface ProductImage {
 
 export interface Product {
   id: string;
-  name: string;
+  nameEn: string;
+  nameRo: string;
   slug: string;
-  description: string;
+  descriptionEn: string;
+  descriptionRo: string;
   price: number;
   stock: number;
   categoryId: string;

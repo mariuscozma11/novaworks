@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { AuthService } from '@/lib/auth';
 import { getDictionary } from '@/lib/get-dictionary-client';
 import type { Locale } from '@/lib/i18n-config';
 
-export default function AuthPage({ params }: { params: Promise<{ lang: string }> }) {
+function AuthPageContent({ params }: { params: Promise<{ lang: string }> }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [lang, setLang] = useState<Locale>('en');
@@ -243,5 +243,13 @@ export default function AuthPage({ params }: { params: Promise<{ lang: string }>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AuthPage({ params }: { params: Promise<{ lang: string }> }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div>Loading...</div></div>}>
+      <AuthPageContent params={params} />
+    </Suspense>
   );
 }

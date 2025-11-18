@@ -11,9 +11,9 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const token = this.getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(options.headers || {}),
+      ...(options.headers as Record<string, string> || {}),
     };
 
     if (token) {
@@ -33,7 +33,23 @@ export class ApiClient {
       throw error;
     }
 
-    return response.json();
+    // Handle empty responses (204 No Content, DELETE requests, etc.)
+    const contentType = response.headers.get('content-type');
+    if (
+      response.status === 204 ||
+      !contentType ||
+      !contentType.includes('application/json')
+    ) {
+      return {} as T;
+    }
+
+    // Check if response body is empty
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {} as T;
+    }
+
+    return JSON.parse(text);
   }
 
   // Auth endpoints
@@ -70,9 +86,11 @@ export class ApiClient {
   }
 
   static async createCategory(data: {
-    name: string;
+    nameEn: string;
+    nameRo: string;
     slug: string;
-    description?: string;
+    descriptionEn?: string;
+    descriptionRo?: string;
     imageUrl?: string;
   }) {
     return this.request<any>('/categories', {
@@ -84,9 +102,11 @@ export class ApiClient {
   static async updateCategory(
     id: string,
     data: {
-      name?: string;
+      nameEn?: string;
+      nameRo?: string;
       slug?: string;
-      description?: string;
+      descriptionEn?: string;
+      descriptionRo?: string;
       imageUrl?: string;
     }
   ) {
@@ -112,9 +132,11 @@ export class ApiClient {
   }
 
   static async createProduct(data: {
-    name: string;
+    nameEn: string;
+    nameRo: string;
     slug: string;
-    description: string;
+    descriptionEn: string;
+    descriptionRo: string;
     price: number;
     stock?: number;
     categoryId: string;
@@ -129,9 +151,11 @@ export class ApiClient {
   static async updateProduct(
     id: string,
     data: {
-      name?: string;
+      nameEn?: string;
+      nameRo?: string;
       slug?: string;
-      description?: string;
+      descriptionEn?: string;
+      descriptionRo?: string;
       price?: number;
       stock?: number;
       categoryId?: string;
