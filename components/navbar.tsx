@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search, Heart, ShoppingCart, ChevronDown } from 'lucide-react';
+import { Heart, ShoppingCart, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import { getDictionary, type Locale } from '@/lib/i18n';
 import { LanguageSelector } from '@/components/language-selector';
 import { NavbarClient } from '@/components/navbar-client';
 import { UserMenu } from '@/components/user-menu';
+import { SearchButton } from '@/components/search-button';
 
 export async function Navbar({ lang }: { lang: Locale }) {
   const dict = await getDictionary(lang);
@@ -21,7 +22,7 @@ export async function Navbar({ lang }: { lang: Locale }) {
 
   try {
     const response = await fetch(`${API_URL}/categories`, {
-      cache: 'no-store', // Always fetch fresh data
+      next: { revalidate: 3600 }, // Always fetch fresh data
     });
     if (response.ok) {
       categories = await response.json();
@@ -40,13 +41,7 @@ export async function Navbar({ lang }: { lang: Locale }) {
     {
       label: dict.navbar.products,
       href: `/${lang}/products`,
-      hasDropdown: true,
-      dropdownItems: [
-        { label: dict.navbar.allProducts, href: `/${lang}/products` },
-        { label: dict.navbar.newArrivals, href: `/${lang}/products/new` },
-        { label: dict.navbar.bestSellers, href: `/${lang}/products/bestsellers` },
-        { label: dict.navbar.sale, href: `/${lang}/products/sale` },
-      ],
+      hasDropdown: false,
     },
     {
       label: dict.navbar.categories,
@@ -127,10 +122,15 @@ export async function Navbar({ lang }: { lang: Locale }) {
             {/* Language Selector */}
             <LanguageSelector currentLang={lang} />
 
-            {/* Search Icon */}
-            <Button variant="ghost" className="hidden md:flex p-3 min-h-0 h-auto">
-              <Search className="!size-5" strokeWidth={2} />
-            </Button>
+            {/* Search Button */}
+            <SearchButton
+              lang={lang}
+              placeholder={dict.products.searchPlaceholder}
+              title={dict.products.searchTitle}
+              buttonText={dict.products.searchButton}
+              noResultsTitle={dict.products.noResultsTitle}
+              noResultsHint={dict.products.noResultsHint}
+            />
 
             {/* User Menu Dropdown */}
             <UserMenu
@@ -146,7 +146,7 @@ export async function Navbar({ lang }: { lang: Locale }) {
 
             {/* Favorites with Badge */}
             <Button variant="ghost" className="relative p-3 min-h-0 h-auto">
-              <Heart className="!size-5" strokeWidth={2} />
+              <Heart className="size-5" strokeWidth={2} />
               <div className="absolute top-1 right-1 h-4 w-4 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px] font-semibold">
                 {favoritesCount}
               </div>
@@ -154,7 +154,7 @@ export async function Navbar({ lang }: { lang: Locale }) {
 
             {/* Shopping Cart with Badge */}
             <Button variant="ghost" className="relative p-3 min-h-0 h-auto">
-              <ShoppingCart className="!size-5" strokeWidth={2} />
+              <ShoppingCart className="size-5" strokeWidth={2} />
               <div className="absolute top-1 right-1 h-4 w-4 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px] font-semibold">
                 {cartCount}
               </div>

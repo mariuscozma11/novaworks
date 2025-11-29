@@ -33,25 +33,29 @@ interface NewArrivalsProps {
 }
 
 export async function NewArrivals({ lang, dict }: NewArrivalsProps) {
-  // Fetch products from API
+  // Fetch products from API using the search endpoint with filtering
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   let products: Product[] = [];
 
   try {
-    const response = await fetch(`${API_URL}/products`, {
-      cache: 'no-store',
+    // Use the search endpoint with sorting and limit
+    const params = new URLSearchParams({
+      sortBy: 'createdAt',
+      sortOrder: 'DESC',
+      limit: '12',
+      offset: '0',
     });
+
+    const response = await fetch(`${API_URL}/products/search?${params.toString()}`, {
+      next: { revalidate: 3600 },
+    });
+
     if (response.ok) {
-      const allProducts = await response.json();
-      // Sort by newest first and limit
-      products = allProducts
-        .sort((a: Product, b: Product) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-        .slice(0, 12); // Fetch 12 products, we'll hide some with CSS on smaller screens
+      const data = await response.json();
+      products = data.products || [];
     }
   } catch (error) {
-    console.error('Failed to fetch products:', error);
+    console.error('Failed to fetch new arrivals:', error);
   }
 
   if (products.length === 0) {

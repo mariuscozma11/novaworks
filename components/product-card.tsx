@@ -55,7 +55,7 @@ export function ProductCard({ product, lang, dict }: ProductCardProps) {
             src={primaryImage}
             alt={productName}
             fill
-            className="object-contain transition-transform duration-300 group-hover:scale-105"
+            className="object-contain"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             loading="lazy"
             quality={75}
@@ -73,47 +73,49 @@ export function ProductCard({ product, lang, dict }: ProductCardProps) {
 
           {/* Hover Action Buttons */}
           <div
-            className={`absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 p-4 bg-gradient-to-t from-black/60 to-transparent transition-all duration-300 ${
-              isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+            className={`absolute bottom-4 left-1/2 -translate-x-1/2 transition-all duration-300 ${
+              isHovered ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <Button
-              size="icon"
-              variant="secondary"
-              className="h-9 w-9 bg-white/90 hover:bg-white"
-              onClick={(e) => {
-                e.preventDefault();
-                // Quick view action
-              }}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-
-            {!isOutOfStock && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-lg backdrop-saturate-150 bg-white/90 dark:bg-black/80 border border-white/20 shadow-lg">
               <Button
                 size="icon"
-                variant="secondary"
-                className="h-9 w-9 bg-white/90 hover:bg-white"
+                variant="ghost"
+                className="h-8 w-8 rounded-full hover:bg-white/30 dark:hover:bg-white/20"
                 onClick={(e) => {
                   e.preventDefault();
-                  // Add to cart action
+                  // Quick view action
                 }}
               >
-                <ShoppingCart className="h-4 w-4" />
+                <Eye className="h-4 w-4" />
               </Button>
-            )}
 
-            <Button
-              size="icon"
-              variant="secondary"
-              className="h-9 w-9 bg-white/90 hover:bg-white"
-              onClick={(e) => {
-                e.preventDefault();
-                // Add to favorites action
-              }}
-            >
-              <Heart className="h-4 w-4" />
-            </Button>
+              {!isOutOfStock && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full hover:bg-white/30 dark:hover:bg-white/20"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Add to cart action
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                </Button>
+              )}
+
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 rounded-full hover:bg-white/30 dark:hover:bg-white/20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Add to favorites action
+                }}
+              >
+                <Heart className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </Link>

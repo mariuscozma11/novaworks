@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/auth-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { LayoutWrapper } from "@/components/layout-wrapper";
+import { Providers } from "@/components/providers";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -41,14 +42,16 @@ export default async function LocaleLayout({
       <body
         className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <AuthProvider>
-          <LayoutWrapper
-            navbar={<Navbar lang={lang} />}
-            footer={<Footer lang={lang} />}
-          >
-            {children}
-          </LayoutWrapper>
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            <LayoutWrapper
+              navbar={<Navbar lang={lang} />}
+              footer={<Footer lang={lang} />}
+            >
+              {children}
+            </LayoutWrapper>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

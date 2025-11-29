@@ -127,6 +127,41 @@ export class ApiClient {
     return this.request<any[]>('/products');
   }
 
+  static async searchProducts(filters: {
+    search?: string;
+    categoryId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+    sortBy?: 'price' | 'createdAt' | 'nameEn' | 'stock';
+    sortOrder?: 'ASC' | 'DESC';
+    limit?: number;
+    offset?: number;
+  }) {
+    const params = new URLSearchParams();
+
+    if (filters.search) params.append('search', filters.search);
+    if (filters.categoryId) params.append('categoryId', filters.categoryId);
+    if (filters.minPrice != null) params.append('minPrice', filters.minPrice.toString());
+    if (filters.maxPrice != null) params.append('maxPrice', filters.maxPrice.toString());
+    if (filters.inStock != null) params.append('inStock', filters.inStock.toString());
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+    if (filters.limit != null) params.append('limit', filters.limit.toString());
+    if (filters.offset != null) params.append('offset', filters.offset.toString());
+
+    const queryString = params.toString();
+    const endpoint = queryString ? `/products/search?${queryString}` : '/products/search';
+
+    return this.request<{
+      products: any[];
+      total: number;
+      limit: number;
+      offset: number;
+      hasMore: boolean;
+    }>(endpoint);
+  }
+
   static async getProduct(id: string) {
     return this.request<any>(`/products/${id}`);
   }
