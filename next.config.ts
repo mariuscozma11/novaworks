@@ -15,6 +15,30 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 86400, // Cache optimized images for 1 day
   },
+  async headers() {
+    return [
+      {
+        // Cache optimized images for 1 day in browser
+        source: '/_next/image',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=172800',
+          },
+        ],
+      },
+      {
+        // Cache static assets for 1 year
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

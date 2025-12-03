@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import Negotiator from 'negotiator';
@@ -53,6 +54,16 @@ export function middleware(request: NextRequest) {
   if (locale && i18n.locales.includes(locale as any)) {
     const response = NextResponse.next();
     response.cookies.set('NEXT_LOCALE', locale, { maxAge: 31536000 });
+
+    // Add browser cache headers for static pages
+    // Products and categories should be cached in the browser for 1 day
+    if (pathname.includes('/products/') || pathname.includes('/categories/')) {
+      response.headers.set(
+        'Cache-Control',
+        'public, max-age=86400, stale-while-revalidate=172800'
+      );
+    }
+
     return response;
   }
 }

@@ -31,7 +31,7 @@ export async function BrowseCategories({ lang, dict }: BrowseCategoriesProps) {
 
   try {
     const response = await fetch(`${API_URL}/categories`, {
-      next: { revalidate: 3600 },
+      cache: 'force-cache',
     });
     if (response.ok) {
       categories = await response.json();

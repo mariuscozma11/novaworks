@@ -40,7 +40,7 @@ export default async function ProductsPage({
 
   try {
     const response = await fetch(`${API_URL}/categories`, {
-      cache: "no-store",
+      cache: 'force-cache',
     });
     if (response.ok) {
       categories = await response.json();

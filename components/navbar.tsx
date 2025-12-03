@@ -22,7 +22,7 @@ export async function Navbar({ lang }: { lang: Locale }) {
 
   try {
     const response = await fetch(`${API_URL}/categories`, {
-      next: { revalidate: 3600 }, // Always fetch fresh data
+      cache: 'force-cache',
     });
     if (response.ok) {
       categories = await response.json();
