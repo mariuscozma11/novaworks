@@ -47,7 +47,7 @@ export async function generateMetadata({
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   try {
     const response = await fetch(`${API_URL}/products/${slug}`, {
-      cache: 'force-cache',
+      cache: 'no-store',
     });
 
     if (response.ok) {
@@ -84,7 +84,7 @@ export default async function ProductPage({
 
   try {
     const response = await fetch(`${API_URL}/products/${slug}`, {
-      cache: 'force-cache',
+      cache: 'no-store',
     });
 
     if (response.ok) {

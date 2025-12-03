@@ -31,7 +31,7 @@ export async function BrowseCategories({ lang, dict }: BrowseCategoriesProps) {
 
   try {
     const response = await fetch(`${API_URL}/categories`, {
-      cache: 'force-cache',
+      cache: 'no-store',
     });
     if (response.ok) {
       categories = await response.json();

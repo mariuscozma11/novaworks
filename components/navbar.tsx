@@ -22,7 +22,7 @@ export async function Navbar({ lang }: { lang: Locale }) {
 
   try {
     const response = await fetch(`${API_URL}/categories`, {
-      cache: 'force-cache',
+      cache: 'no-store',
     });
     if (response.ok) {
       categories = await response.json();
