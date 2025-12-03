@@ -38,7 +38,7 @@ export default async function LocaleLayout({
   const { lang } = await params as { lang: Locale };
 
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X, Crop } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ApiClient } from '@/lib/api';
 import { Product, Category } from '@/lib/types';
+import { ImageCropDialog } from '@/components/admin/image-crop-dialog';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -55,6 +56,13 @@ export default function ProductsPage() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Crop dialog state
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [currentCropImage, setCurrentCropImage] = useState<string>('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [reCropIndex, setReCropIndex] = useState<number | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -78,19 +86,101 @@ export default function ProductsPage() {
   const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-    if (files.length > 10) {
+    if (imageUrls.length + files.length > 10) {
       alert('Maximum 10 images allowed');
       return;
     }
 
+    // Store files and open crop dialog for the first one
+    setPendingFiles(files);
+    setCurrentFileIndex(0);
+
+    // Convert first file to data URL
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCurrentCropImage(reader.result as string);
+      setCropDialogOpen(true);
+    };
+    reader.readAsDataURL(files[0]);
+
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
     setUploadingImages(true);
+
     try {
-      const response = await ApiClient.uploadProductImages(files);
-      setImageUrls([...imageUrls, ...response.urls]);
+      // Convert blob to file
+      const fileName =
+        reCropIndex !== null
+          ? `recropped-${Date.now()}.jpg`
+          : pendingFiles[currentFileIndex].name;
+      const croppedFile = new File([croppedBlob], fileName, { type: 'image/jpeg' });
+
+      // Upload the cropped image
+      const response = await ApiClient.uploadProductImages([croppedFile]);
+
+      if (reCropIndex !== null) {
+        // Replace existing image
+        const newUrls = [...imageUrls];
+        newUrls[reCropIndex] = response.urls[0];
+        setImageUrls(newUrls);
+        setReCropIndex(null);
+        setPendingFiles([]);
+        setCurrentFileIndex(0);
+        setCropDialogOpen(false);
+      } else {
+        // Add new image
+        setImageUrls([...imageUrls, response.urls[0]]);
+
+        // Check if there are more files to crop
+        if (currentFileIndex < pendingFiles.length - 1) {
+          const nextIndex = currentFileIndex + 1;
+          setCurrentFileIndex(nextIndex);
+
+          // Load next file
+          const reader = new FileReader();
+          reader.onload = () => {
+            setCurrentCropImage(reader.result as string);
+          };
+          reader.readAsDataURL(pendingFiles[nextIndex]);
+        } else {
+          // All files processed
+          setPendingFiles([]);
+          setCurrentFileIndex(0);
+          setCropDialogOpen(false);
+        }
+      }
     } catch (error: any) {
-      alert('Failed to upload images: ' + (error.message || 'Unknown error'));
+      alert('Failed to upload image: ' + (error.message || 'Unknown error'));
+      setPendingFiles([]);
+      setCurrentFileIndex(0);
+      setCropDialogOpen(false);
     } finally {
       setUploadingImages(false);
+    }
+  };
+
+  const handleReCrop = async (index: number) => {
+    setReCropIndex(index);
+    setPendingFiles([]);
+    setCurrentFileIndex(0);
+
+    try {
+      // Fetch the image and convert to data URL to avoid CORS issues
+      const response = await fetch(imageUrls[index]);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCurrentCropImage(reader.result as string);
+        setCropDialogOpen(true);
+      };
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error('Failed to load image for re-crop:', error);
+      alert('Failed to load image. Please try again.');
+      setReCropIndex(null);
     }
   };
 
@@ -116,7 +206,7 @@ export default function ProductsPage() {
       };
 
       if (editingProduct) {
-        await ApiClient.updateProduct(editingProduct.id, productData);
+        await ApiClient.updateProduct(editingProduct.slug, productData);
       } else {
         await ApiClient.createProduct(productData);
       }
@@ -130,14 +220,14 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (slug: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
       // Optimistic update - remove from UI immediately
-      setProducts((prev) => prev.filter((prod) => prod.id !== id));
+      setProducts((prev) => prev.filter((prod) => prod.slug !== slug));
 
-      await ApiClient.deleteProduct(id);
+      await ApiClient.deleteProduct(slug);
 
       // Fetch fresh data to ensure consistency
       await fetchData();
@@ -377,13 +467,24 @@ export default function ProductsPage() {
                           alt={`Product ${index + 1}`}
                           className="h-24 w-24 object-cover rounded-md"
                         />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleReCrop(index)}
+                            className="bg-white text-black rounded-full p-1.5 hover:bg-gray-100"
+                            title="Re-crop image"
+                          >
+                            <Crop className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/90"
+                            title="Remove image"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -491,7 +592,7 @@ export default function ProductsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(product.id)}
+                          onClick={() => handleDelete(product.slug)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -504,6 +605,22 @@ export default function ProductsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Image Crop Dialog */}
+      <ImageCropDialog
+        open={cropDialogOpen}
+        onOpenChange={(open) => {
+          setCropDialogOpen(open);
+          if (!open) {
+            // Reset crop state if dialog is closed without saving
+            setPendingFiles([]);
+            setCurrentFileIndex(0);
+            setReCropIndex(null);
+          }
+        }}
+        imageSrc={currentCropImage}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 }

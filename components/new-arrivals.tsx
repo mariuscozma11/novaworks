@@ -47,7 +47,7 @@ export async function NewArrivals({ lang, dict }: NewArrivalsProps) {
     });
 
     const response = await fetch(`${API_URL}/products/search?${params.toString()}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 }, // Cache for 1 day
     });
 
     if (response.ok) {

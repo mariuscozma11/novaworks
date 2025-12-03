@@ -84,7 +84,7 @@ export default async function ProductPage({
 
   try {
     const response = await fetch(`${API_URL}/products/${slug}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 }, // Cache for 1 day
     });
 
     if (response.ok) {

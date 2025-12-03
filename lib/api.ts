@@ -26,6 +26,14 @@ export class ApiClient {
     });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - clear token and redirect to login
+      if (response.status === 401) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/auth/login';
+        }
+      }
+
       const error = await response.json().catch(() => ({
         message: 'An error occurred',
         statusCode: response.status,
@@ -162,8 +170,8 @@ export class ApiClient {
     }>(endpoint);
   }
 
-  static async getProduct(id: string) {
-    return this.request<any>(`/products/${id}`);
+  static async getProduct(slug: string) {
+    return this.request<any>(`/products/${slug}`);
   }
 
   static async createProduct(data: {
@@ -184,7 +192,7 @@ export class ApiClient {
   }
 
   static async updateProduct(
-    id: string,
+    slug: string,
     data: {
       nameEn?: string;
       nameRo?: string;
@@ -197,14 +205,14 @@ export class ApiClient {
       images?: { url: string; order?: number }[];
     }
   ) {
-    return this.request<any>(`/products/${id}`, {
+    return this.request<any>(`/products/${slug}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
   }
 
-  static async deleteProduct(id: string) {
-    return this.request<void>(`/products/${id}`, {
+  static async deleteProduct(slug: string) {
+    return this.request<void>(`/products/${slug}`, {
       method: 'DELETE',
     });
   }
@@ -274,6 +282,14 @@ export class ApiClient {
     });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - clear token and redirect to login
+      if (response.status === 401) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/auth/login';
+        }
+      }
+
       const error = await response.json().catch(() => ({
         message: 'Upload failed',
         statusCode: response.status,
